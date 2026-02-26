@@ -13,6 +13,8 @@ interface Livro {
 
 export default function HomePage() {
 
+    const [carregando, setCarregando] = useState(false);
+
     const [idEditando, setIdEditando] = useState<string | null>(null);
     // Estados temporários para os campos que estão sendo editados
     const [tituloEditando, setTituloEditando] = useState('');
@@ -63,7 +65,7 @@ export default function HomePage() {
     async function adicionarLivro(e: React.FormEvent) {
         e.preventDefault()
         const { data: { user } } = await supabase.auth.getUser()
-
+        setCarregando(true);
         if (user) {
             const { error } = await supabase.from('livros').insert([
                 {
@@ -78,9 +80,11 @@ export default function HomePage() {
             if (!error) {
                 setNovoTitulo(''); setNovoAutor(''); setNovoStatus(''); setNovaNota(0);
                 setMensagemSucesso(true);
-                setTimeout(() => setMensagemSucesso(false), 3000);
+                setTimeout(() => setMensagemSucesso(false), 2000);
                 carregarLivros()
             }
+
+            setCarregando(false);
         }
     }
 
@@ -117,7 +121,7 @@ export default function HomePage() {
             {/* HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+                    <h1 className="text-3xl font-bold text-black flex items-center gap-2">
                         <span className="text-4xl">📚</span> Minha Biblioteca
                     </h1>
                     {emailUsuario && (
@@ -128,14 +132,14 @@ export default function HomePage() {
                 </div>
                 <button
                     onClick={handleLogout}
-                    className="text-xs uppercase tracking-widest bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-5 py-2 rounded-full transition-all"
+                    className="text-xs uppercase tracking-widest bg-white hover:bg-red-900 text-red-600 hover:text-white border border-red-900/50 px-5 py-2 rounded-full transition-all"
                 >
-                    Sair da conta
+                    Logoff
                 </button>
             </div>
 
             {mensagemSucesso && (
-                <div className="bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 p-3 rounded-lg mb-6 text-center text-sm font-medium animate-in fade-in slide-in-from-top-2">
+                <div className="max-w-md mx-auto bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 p-3 rounded-lg mb-6 text-center text-sm font-medium animate-in fade-in slide-in-from-top-2">
                     ✨ Livro adicionado com sucesso!
                 </div>
             )}
@@ -197,7 +201,10 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <button type="submit" className="md:col-span-2 bg-blue-600 hover:bg-blue-500 text-white h-[46px] rounded-lg font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20">
+                <button
+                    disabled={carregando}
+                    type="submit" className="md:col-span-2 bg-blue-600 hover:bg-blue-500 text-white h-[46px] rounded-lg font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20"
+                >
                     Adicionar
                 </button>
             </form>
